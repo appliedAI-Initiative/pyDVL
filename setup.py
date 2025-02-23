@@ -31,6 +31,7 @@ setup(
             "zarr>=2.16.1,<3",
         ],
         "ray": ["ray>=0.8"],
+        "lava": ["pot>=0.9"],
     },
     author="appliedAI Institute gGmbH",
     long_description=long_description,
