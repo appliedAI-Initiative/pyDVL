@@ -199,7 +199,7 @@ class RayExecutor(Executor):
 
 
 class _WorkItem:
-    """Inspired by code from: [concurrent.futures.thread][]"""
+    """Inspired by code from: [concurrent.futures][]"""
 
     def __init__(
         self,

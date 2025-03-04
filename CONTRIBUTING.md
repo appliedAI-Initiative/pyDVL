@@ -83,7 +83,7 @@ If you use remote execution, don't forget to exclude data paths from deployment
 ## Testing
 
 Automated builds, tests, generation of documentation and publishing are handled
-by [CI pipelines](#CI). Before pushing your changes to the remote we recommend
+by [CI pipelines](#ci). Before pushing your changes to the remote we recommend
 to execute `tox` locally in order to detect mistakes early on and to avoid
 failing pipelines. tox will:
 * run the test suite

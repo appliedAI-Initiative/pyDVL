@@ -50,7 +50,7 @@ If you're a first time user of pyDVL, we recommend you to go through
 
 
 -   :fontawesome-regular-file-code:{ .lg .middle }
-    [__API Reference__](api/pydvl/)
+    [__API Reference__](api/pydvl/index.md)
 
     ---
 

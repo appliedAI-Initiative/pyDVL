@@ -42,6 +42,8 @@ nav:
       - For outlier detection: examples/influence_wine.ipynb
       - For language models: examples/influence_sentiment_analysis.ipynb
   - Code:
+    # We use literate-nav to generate the navigation sidebar for the API
+    # by leaving the trailing slash. Do not remove it!
     - API Reference: api/pydvl/
     - Changelog: CHANGELOG.md
     - Development Guidelines: CONTRIBUTING.md
@@ -122,7 +124,8 @@ plugins:
             docstring_section_style: spacy
             line_length: 80
             show_bases: true
-            members_order: source
+            members_order: alphabetical
+            modernize_annotations: true
             show_submodules: false
             separate_signature: true
             show_signature_annotations: true

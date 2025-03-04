@@ -211,7 +211,7 @@ class Utility:
 
         Returns:
             0 if no indices are passed, `default_score` if we fail
-                to fit the model or the scorer returns [numpy.NaN][]. Otherwise, the score
+                to fit the model or the scorer returns [numpy.nan][]. Otherwise, the score
                 of the model on the test data.
         """
         if not indices:

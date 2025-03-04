@@ -1,5 +1,6 @@
 ---
 title: Data-OOB
+alias: data-oob-valuation
 ---
 
 # Data valuation for bagged models with Data-OOB

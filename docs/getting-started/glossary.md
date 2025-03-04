@@ -22,7 +22,7 @@ Introduced by [@schioppa_scaling_2022] in the context of influence functions.
 
 ### Block Conjugate Gradient { #glossary-block-cg }
 
-A blocked version of [CG][glossary-conjugate-gradient], which solves several linear
+A blocked version of [CG][glossary-cg], which solves several linear
 systems simultaneously. For Influence Functions, it is used to
 approximate the [iHVP][glossary-iHVP].
 
@@ -41,7 +41,7 @@ Introduced by [@schoch_csshapley_2022].
 
  * [Implementation
    ][pydvl.valuation.methods.classwise_shapley.ClasswiseShapleyValuation]
- * [Documentation][class-wise-shapley]
+ * [Documentation][classwise-shapley]
 
 ### Conjugate Gradient { #glossary-cg }
 
@@ -53,7 +53,7 @@ approximate the [iHVP][glossary-iHVP].
    (torch)][pydvl.influence.torch.influence_function_model.CgInfluence]
  * [Documentation (torch)][cg]
 
-### Data-OOB { #glorssary-data-oob }
+### Data-OOB { #glossary-data-oob }
 
 Data-OOB is a method for valuing data points for a bagged model using its
 out-of-bag performance estimate. It overcomes the computational bottleneck of
@@ -63,7 +63,7 @@ all weak learners.
 Introduced in [@kwon_dataoob_2023].
 
  * [Implementation][pydvl.valuation.methods.data_oob.DataOOBValuation]
- * [Documentation][data-oob]
+ * [Documentation][data-oob-valuation]
 
 
 ### Data Utility Learning { #glossary-data-utility-learning }
@@ -80,7 +80,7 @@ Introduced by [@wang_improving_2022].
 
 ### Eigenvalue-corrected Kronecker-Factored Approximate Curvature
 
-EKFAC builds on [K-FAC][flossary-k-fac] by correcting for the approximation
+EKFAC builds on [K-FAC][glossary-k-fac] by correcting for the approximation
 errors in the eigenvalues of the blocks of the Kronecker-factored approximate
 curvature matrix. This correction aims to refine the accuracy of natural
 gradient approximations, thus potentially offering better training efficiency
@@ -163,10 +163,12 @@ performance when that point is removed from the training set.
 ### Maximum Sample Reuse  { #glossary-msr }
 
 MSR is a sampling method for data valuation that updates the value of every
-data point in one sample. This method can achieve much faster convergence. It
-can be used with any
+data point in one sample. This method can achieve much faster convergence. In
+principle, it can be used with any
 [semi-value][pydvl.valuation.methods.semivalue.SemivalueValuation] by setting
-the sampler to be `MSR`.
+the sampler to be `MSR`, but due to the numerical instabilities introduced by
+the coefficients of e.g. Shapley values, it is mostly useful only with
+[Data Banzhaf][pydvl.valuation.methods.data_banzhaf.DataBanzhafValuation].
 Introduced by [@wang_data_2023]
 
 * [Implementation][pydvl.valuation.samplers.msr.MSRSampler]
@@ -198,7 +200,7 @@ The Nyström approximation computes a low-rank approximation to a symmetric
 positive-definite matrix via random projections. For influence functions, 
 it is used to approximate the [iHVP][glossary-iHVP].
 Introduced as sketch and solve algorithm in [@hataya_nystrom_2023], and as
-preconditioner for [PCG][glossary-preconditioned-conjugate-gradient] in
+preconditioner for [PCG][glossary-preconditioned-cg] in
 [@frangella_randomized_2023].
 
  * [Implementation Sketch-and-Solve
@@ -218,27 +220,27 @@ performance, where the points are removed in order of their value. See
 
 ### Preconditioned Block Conjugate Gradient  { #glossary-preconditioned-block-cg }
 
-A blocked version of [PCG][glossary-preconditioned-conjugate-gradient], which solves 
+A blocked version of [PCG][glossary-preconditioned-cg], which solves 
 several linear systems simultaneously. For Influence Functions, it is used to
 approximate the [iHVP][glossary-iHVP].
 
  * [Implementation CG (torch)
    ][pydvl.influence.torch.influence_function_model.CgInfluence]
- * [Implementation Preconditioner (torch)
-   ][pydvl.influence.torch.pre_conditioner]
+ * [Implementation Preconditioner
+   (torch)][pydvl.influence.torch.preconditioner.Preconditioner]
  * [Documentation (torch)][cg]
 
 ### Preconditioned Conjugate Gradient  { #glossary-preconditioned-cg }
 
-A preconditioned version of [CG][glossary-conjugate-gradient] for improved
+A preconditioned version of [CG][glossary-cg] for improved
 convergence, depending on the characteristics of the matrix and the
 preconditioner. For Influence Functions, it is used to
 approximate the [iHVP][glossary-iHVP].
 
  * [Implementation CG (torch)
    ][pydvl.influence.torch.influence_function_model.CgInfluence]
- * [Implementation Preconditioner (torch)
-   ][pydvl.influence.torch.pre_conditioner]
+ * [Implementation Preconditioner
+   (torch)][pydvl.influence.torch.preconditioner.Preconditioner]
  * [Documentation (torch)][cg]
 
 ### Shapley Value  { #glossary-shapley-value }

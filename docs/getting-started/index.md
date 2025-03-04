@@ -13,10 +13,10 @@ with support for [influence function computation](#installation-influences).
 
 We have introductions to the ideas behind [[data-valuation|Data valuation]] and
 [[influence-function|Influence functions]], as well as a short overview of
-[common applications](applications).
+[common applications](applications.md).
 
 
-## Installing pyDVL { # installation }
+## Installing pyDVL { #installation }
 
 To install the latest release use:
 

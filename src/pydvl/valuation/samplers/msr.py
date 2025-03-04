@@ -1,6 +1,13 @@
 """
 This module implements Maximum Sample Re-use (MSR) sampling for valuation, as described
-in (Wang et al.)<sup><a href="#wang_data_2023">1</a></sup>.
+in Wang and Jia (2023)[^1], where it was introduced specifically for
+[Data Banhzaf][pydvl.valuation.methods.data_banzhaf].
+
+!!! Warning
+    MSR can be very unstable when used with valuation algorithms other than
+    [Data Banzhaf][pydvl.valuation.methods.data_banzhaf]. This is because of the
+    instabilities introduced by the correction coefficients. For more, see Appendix C.1
+    of Wang and Jia (2023)[^1].
 
 The idea behind MSR is to update all indices in the dataset with every evaluation of the
 utility function on a sample. Updates are divided into positive, if the index is in the
@@ -14,6 +21,7 @@ respectively.
 
 For more on the general architecture of samplers see
 [pydvl.valuation.samplers][pydvl.valuation.samplers].
+
 
 ## References
 
@@ -59,6 +67,7 @@ __all__ = ["MSRSampler"]
 @dataclass(frozen=True)
 class MSRValueUpdate(ValueUpdate):
     """Update for Maximum Sample Re-use (MSR) valuation (in log space).
+
     Attributes:
         in_sample: Whether the index to be updated was in the sample.
     """

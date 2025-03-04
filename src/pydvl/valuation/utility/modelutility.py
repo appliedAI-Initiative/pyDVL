@@ -186,7 +186,7 @@ class ModelUtility(UtilityBase[SampleT], Generic[SampleT, ModelT]):
 
         Returns:
             0 if no indices are passed, `scorer.default` if we fail to fit the
-                model or the scorer returns [numpy.NaN][]. Otherwise, the score
+                model or the scorer returns [numpy.nan][]. Otherwise, the score
                 of the model.
         """
         if self.training_data is None:
