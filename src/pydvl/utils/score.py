@@ -1,4 +1,9 @@
 """
+!!! Warning "Deprecation notice"
+    This module is deprecated since v0.10.0. For use with the methods in
+    [pydvl.valuation][] please use [pydvl.valuation.scorers][] instead.
+
+
 This module provides a [Scorer][pydvl.utils.score.Scorer] class that wraps
 scoring functions with additional information.
 

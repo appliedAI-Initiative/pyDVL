@@ -87,7 +87,7 @@ class DeltaShapleyValuation(SemivalueValuation):
             utility, sampler, is_done, progress=progress, skip_converged=skip_converged
         )
 
-    def log_coefficient(self, n: int, k: int) -> float:
+    def _log_coefficient(self, n: int, k: int) -> float:
         # assert self.lower_bound <= k <= self.upper_bound, "Invalid subset size"
         if not self.lower_bound <= k <= self.upper_bound:
             return -np.inf

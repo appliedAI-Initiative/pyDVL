@@ -37,27 +37,28 @@ function of three factors:
 
 pyDVL collects algorithms for the computation of data values in this sense,
 mostly those derived from cooperative game theory. The methods can be found in
-the package [pydvl.value][pydvl.value], with support from modules
-[pydvl.utils.dataset][pydvl.utils.dataset]
-and [pydvl.utils.utility][pydvl.utils.utility], as detailed below.
+the package [pydvl.valuation.methods][], with support from modules like
+[pydvl.valuation.samplers][] or and [pydvl.valuation.dataset][], as detailed
+below.
 
 !!! Warning
     Be sure to read the section on
     [the difficulties using data values][problems-of-data-values].
 
-There are three main families of methods for data valuation: game-theoretic, 
-influence-based and intrinsic. As of v0.8.1 pyDVL supports the first two. Here,
-we focus on game-theoretic concepts and refer to the main documentation on the
-[influence funtion][the-influence-function] for the second.
+There are three main families of methods for data valuation: model-based,
+influence-based and model-free. As of v0.10.0 pyDVL supports the first two.
+Here, we focus on model-based (and in particular game-theoretic) concepts and
+refer to the main documentation on the [influence
+function][the-influence-function] for the second.
 
-## Game theoretical methods
+## Game theoretical methods and semi-values { #game-theoretical-methods }
 
 The main contenders in game-theoretic approaches are [Shapley
 values](shapley.md) [@ghorbani_data_2019], [@kwon_efficient_2021],
 [@schoch_csshapley_2022], their generalization to so-called
-[semi-values](semi-values.md) by [@kwon_beta_2022] and [@wang_data_2023],
-and [the Core](the-core.md) [@yan_if_2021]. All of these are implemented
-in pyDVL. For a full list see [[methods]]
+[semi-values](semi-values.md) with some examples being [@kwon_beta_2022] and
+[@wang_data_2023], and [the Core](the-core.md) [@yan_if_2021]. All of these are
+implemented in pyDVL. For a full list see [[methods]].
 
 In these methods, data points are considered players in a cooperative game 
 whose outcome is the performance of the model when trained on subsets 
@@ -84,195 +85,204 @@ applications. For instance, SV methods try to equitably distribute all value
 among all samples, failing to identify repeated ones as unnecessary, with e.g. a
 zero value.
 
-
 ## Computing data values { #computing-data-values }
 
-Using pyDVL to compute data values is a simple process that can be broken down
-into three steps:
+Using pyDVL to compute data values is a flexible process that can be broken down
+into several steps. This degree of flexibility allows for a wide range of
+applications, but it can also be a bit overwhelming. The following steps are
+necessary:
 
-1. Creating a [Dataset][pydvl.utils.dataset.Dataset] object from your data.
-2. Creating a [Utility][pydvl.utils.utility.Utility] which ties your model to
-   the dataset and a [scoring function][pydvl.utils.utility.Scorer].
-3. Computing values with a method of your choice, e.g. via
-   [compute_shapley_values][pydvl.value.shapley.common.compute_shapley_values].
+1. Creating two [Datasets][pydvl.valuation.Dataset] object from your data: one
+   for training and one for evaluating the utility. The quality of this latter set
+   is crucial for the quality of the values.
+2. Choosing a scoring function,typically something like accuracy or $R^2$, but
+   it can be any function that takes a model and a dataset and returns a number.
+   The test dataset is attached to the scorer. This is done by instantiating a
+   [SupervisedScorer][pydvl.valuation.scorers.SupervisedScorer] object. Other
+   types, and subclassing is possible for non-supervised problems.
+3. Creating a utility object that ties your model to the scoring function. This
+   is done by instantiating a [ModelUtility][pydvl.valuation.utility.ModelUtility].
+4. Computing values with a valuation method of your choice, e.g. via
+   [BanzhafValuation][pydvl.valuation.methods.banzhaf.BanzhafValuation]
+   or [ShapleyValuation][pydvl.valuation.methods.ShapleyValuation]. For
+   [semi-value][semi-values] methods, you will also need to choose a subset
+   sampling scheme, e.g. a
+   [PermutationSampler][pydvl.valuation.samplers.permutation.PermutationSampler]
+   or a simple [UniformSampler][pydvl.valuation.samplers.powerset.UniformSampler].
+5. For methods that require it, in particular those using infinite subset
+   sampling schemes, one must choose a stopping criterion, that is a
+   [stopping condition][pydvl.valuation.stopping] that interrupts the
+   computation e.g. when the change in estimates is low, or the number of
+   iterations or time elapsed exceed some threshold.
+
 
 ### Creating a Dataset
 
 The first item in the tuple $(D, \mathcal{A}, u)$ characterising data value is
-the dataset. The class [Dataset][pydvl.utils.dataset.Dataset] is a simple
-convenience wrapper for the train and test splits that is used throughout pyDVL.
-The test set will be used to evaluate a scoring function for the model.
+the dataset. The class [Dataset][pydvl.valuation.Dataset] is a simple
+convenience wrapper for use across the library. Some class methods allow for the
+convenient creation of train / test splits, e.g. with
+[from_arrays][pydvl.valuation.Dataset.from_arrays]:
 
-It can be used as follows:
+??? Example "Constructing a synthetic classification dataset"
 
-```python
-import numpy as np
-from pydvl.utils import Dataset
-from sklearn.model_selection import train_test_split
-X, y = np.arange(100).reshape((50, 2)), np.arange(50)
-X_train, X_test, y_train, y_test = train_test_split(
-  X, y, test_size=0.5, random_state=16
-)
-dataset = Dataset(X_train, X_test, y_train, y_test)
-```
+    ```python
+    from pydvl.valuation.dataset import Dataset
+    from sklearn.datasets import make_classification
 
-It is also possible to construct Datasets from sklearn toy datasets for
-illustrative purposes using [from_sklearn][pydvl.utils.dataset.Dataset.from_sklearn].
+    X, y = make_classification(n_samples=100, n_features=20, n_classes=3)
+    train, test = Dataset.from_arrays(X, y, stratify_by_target=True)
+    ```
+
+With the class method
+[from_sklearn][pydvl.valuation.Dataset.from_sklearn] it is possible to
+construct a dataset from any of the toy datasets in [sklearn.datasets][]. 
+
+??? Example "Loading a scikit-learn dataset"
+
+    ```python
+    from pydvl.valuation.dataset import Dataset
+    from sklearn.datasets import load_iris
+    train, test = Dataset.from_sklearn(
+        load_iris(), train_size=0.8, stratify_by_target=True
+    )
+    ```
 
 #### Grouping data
 
 Be it because data valuation methods are computationally very expensive, or
 because we are interested in the groups themselves, it can be often useful or
 necessary to group samples to valuate them together.
-[GroupedDataset][pydvl.utils.dataset.GroupedDataset] provides an alternative to
-[Dataset][pydvl.utils.dataset.Dataset] with the same interface which allows this.
+[GroupedDataset][pydvl.valuation.dataset.GroupedDataset] provides an alternative
+to [Dataset][pydvl.valuation.Dataset] with the same interface which allows this.
 
 You can see an example in action in the
 [Spotify notebook](../examples/shapley_basic_spotify), but here's a simple
 example grouping a pre-existing `Dataset`. First we construct an array mapping
 each index in the dataset to a group, then use
-[from_dataset][pydvl.utils.dataset.GroupedDataset.from_dataset]:
+[from_dataset][pydvl.valuation.dataset.GroupedDataset.from_dataset]:
 
-```python
-import numpy as np
-from pydvl.utils import GroupedDataset
+??? Example "Grouping a dataset"
+    This is of course silly, but it serves to illustrate the functionality:
 
-# Randomly assign elements to any one of num_groups:
-data_groups = np.random.randint(0, num_groups, len(dataset))
-grouped_dataset = GroupedDataset.from_dataset(dataset, data_groups)
-```
+    ```python
+    import numpy as np
+    from pydvl.valuation.dataset import Dataset, GroupedDataset
+    
+    dataset = Dataset.from_sklearn(sk.datasets.fetch_covtype())
+    n_groups = 5800
+    # Randomly assign elements to any one of n_groups:
+    data_groups = np.random.randint(0, n_groups, len(dataset))
+    dummy_group_names = [f"Group {i}" for i in range(n_groups)]
+    grouped_dataset = GroupedDataset.from_dataset(
+      dataset, data_groups, dummy_group_names
+    )
+    ```
 
-### Creating a Utility
+### Creating a utility
 
 In pyDVL we have slightly overloaded the name "utility" and use it to refer to
-an object that keeps track of all three items in $(D, \mathcal{A}, u)$. This
-will be an instance of [Utility][pydvl.utils.utility.Utility] which, as mentioned,
-is a convenient wrapper for the dataset, model and scoring function used for
-valuation methods.
+an object that keeps track of both the method and its evaluation. For
+model-based methods like all semi-values including Shapley, the utility
+will be an instance of [ModelUtility][pydvl.valuation.utility.ModelUtility] which,
+as mentioned, is a convenient wrapper for the model and scoring function.
 
-Here's a minimal example:
+??? Example "Creating a `ModelUtility`"
 
-```python
-import sklearn as sk
-from pydvl.utils import Dataset, Utility
+    ```python
+    import sklearn as sk
+    from pydvl.valuation import Dataset, ModelUtility, SupervisedScorer
+    
+    train, test = Dataset.from_sklearn(sk.datasets.load_iris(), train_size=0.6)
+    model = sk.svm.SVC()
+    # Uses the model.score() method by default
+    scorer = SupervisedScorer(model, test)
+    utility = ModelUtility(model, scorer)
+    ```
 
-dataset = Dataset.from_sklearn(sk.datasets.load_iris())
-model = sk.svm.SVC()
-utility = Utility(model, dataset)
-```
+Note how we pass the test set to the scorer. Importantly, the object provides
+information about the range of the score, which is used by some methods to
+estimate the number of samples necessary, and about what default value to use
+when the model fails to train.
 
-The object `utility` is a callable that data valuation methods will execute with
-different subsets of training data. Each call will retrain the model on a subset
-and evaluate it on the test data using a scoring function. By default,
-[Utility][pydvl.utils.utility.Utility] will use `model.score()`, but it is
-possible to use any scoring function (greater values must be better). In
-particular, the constructor accepts the same types as argument as
+If we pass a model to [SupervisedScorer][pydvl.valuation.scorers.SupervisedScorer],
+it will use the model's `score()` method by default, but it is possible to use
+any scoring function (greater values must be better). In particular, the
+constructor accepts the same types of arguments as those of
 [sklearn.model_selection.cross_validate][]: a string, a scorer callable or
 [None][] for the default.
 
 ```python
-utility = Utility(model, dataset, "explained_variance")
+scorer = SupervisedScorer("explained_variance", default=0.0, range=(-np.inf, 1))
 ```
 
-`Utility` will wrap the `fit()` method of the model to cache its results. This
-greatly reduces computation times of Monte Carlo methods. Because of how caching
-is implemented, it is important not to reuse `Utility` objects for different
-datasets. You can read more about [setting up the cache][getting-started-cache] in the
-installation guide, and in the documentation of the
-[caching][pydvl.utils.caching] module.
+The object `utility` is a callable and is used by data valuation methods to
+train the model on various subsets of the data and evaluate its performance. 
+`ModelUtility` wraps the `fit()` method of the model to cache its results. In
+some (rare) cases this reduces computation times of Monte Carlo methods. Because
+of how caching is implemented, it is important not to reuse `ModelUtility`
+objects for different datasets. You can read more about [setting up the
+cache][getting-started-cache] in the installation guide, and in the
+documentation of the [caching][pydvl.utils.caching] module.
 
-#### Using custom scorers
 
-The `scoring` argument of [Utility][pydvl.utils.utility.Utility] can be used to
-specify a custom [Scorer][pydvl.utils.utility.Scorer] object. This is a simple
-wrapper for a callable that takes a model, and test data and returns a score.
+### Computing some values
 
-More importantly, the object provides information about the range of the score,
-which is used by some methods by estimate the number of samples necessary, and
-about what default value to use when the model fails to train.
+By far the most popular concept of value is the Shapley value, a particular case
+of [semi-value][semi-values]. In order to compute them for a training set, all
+we need to do after the previous steps is to instantiate a
+[ShapleyValuation][pydvl.valuation.methods.ShapleyValuation] object and call its
+`fit()` method.
 
-!!! Note
-    The most important property of a `Scorer` is its default value. Because many
-    models will fail to fit on small subsets of the data, it is important to
-    provide a sensible default value for the score.
+??? Example "Computing Shapley values"
+    ```python
+    import sklearn as sk
+    from joblib import parallel_config
+    from pydvl.valuation import Dataset, ModelUtility, ShapleyValuation, SupervisedScorer
+    
+    train, test = Dataset.from_sklearn(sk.datasets.load_iris(), train_size=0.6)
+    model = sk.svm.SVC()
+    scorer = SupervisedScorer("accuracy", test, default=0.0, range=(0, 1))
+    utility = ModelUtility(model, scorer)
+    sampler = PermutationSampler()  # Just one of many examples
+    stopping = MaxUpdates(100)  # A trivial criterion
+    shapley = ShapleyValuation(utility, sampler, stopping)
+    with parallel_config(n_jobs=-1):
+        shapley.fit(train)
 
-It is possible to skip the construction of the [Scorer][pydvl.utils.utility.Scorer]
-when constructing the `Utility` object. The two following calls are equivalent:
+    results = shapley.values()
+    ```
 
-```python
-from pydvl.utils import Utility, Scorer
+Note our use of [joblib.parallel_config][] in the example in order to
+parallelize the computation of the values. Most valuation methods support this.
 
-utility = Utility(
-   model, dataset, "explained_variance", score_range=(-np.inf, 1), default_score=0.0
-)
-utility = Utility(
-   model, dataset, Scorer("explained_variance", range=(-np.inf, 1), default=0.0)
-)
-```
+The result type of all valuations is an object of type
+[ValuationResult][pydvl.valuation.result.ValuationResult]. This can be iterated
+over, sliced, sorted, as well as converted to a [pandas.DataFrame][] using
+[to_dataframe][pydvl.valuation.result.ValuationResult.to_dataframe].
 
-#### Learning the utility
+### Learning the utility
 
-Because each evaluation of the utility entails a full retrain of the model with
-a new subset of the training set, it is natural to try to learn this mapping
-from subsets to scores. This is the idea behind **Data Utility Learning (DUL)**
+Since each evaluation of the utility entails a full retrain of the model on a new subset of the training data, it is natural to try to learn this mapping from subsets to scores. This is the idea behind **Data Utility Learning (DUL)**
 [@wang_improving_2022] and in pyDVL it's as simple as wrapping the
-`Utility` inside [DataUtilityLearning][pydvl.utils.utility.DataUtilityLearning]:
+`ModelUtility` inside [DataUtilityLearning][pydvl.valuation.utility.DataUtilityLearning]:
 
 ```python
-from pydvl.utils import Utility, DataUtilityLearning, Dataset
+from pydvl.valuation import ModelUtility, DataUtilityLearning, Dataset
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.datasets import load_iris
 
 dataset = Dataset.from_sklearn(load_iris())
-u = Utility(LogisticRegression(), dataset)
+u = ModelUtility(LogisticRegression(), dataset)
 training_budget = 3
 wrapped_u = DataUtilityLearning(u, training_budget, LinearRegression())
 
 # First 3 calls will be computed normally
 for i in range(training_budget):
    _ = wrapped_u((i,))
-# Subsequent calls will be computed using the fit model for DUL
+# Subsequent calls will be computed using the learned model for DUL
 wrapped_u((1, 2, 3))
 ```
-
-As you can see, all that is required is a model to learn the utility itself and
-the fitting and using of the learned model happens behind the scenes.
-
-There is a longer example with an investigation of the results achieved by DUL
-in [a dedicated notebook](../examples/shapley_utility_learning).
-
-### Leave-One-Out values
-
-LOO is the simplest approach to valuation. It assigns to each sample its
-*marginal utility* as value:
-
-$$v_u(i) = u(D) − u(D_{-i}).$$
-
-For notational simplicity, we consider the valuation function as defined over
-the indices of the dataset $D$, and $i \in D$ is the index of the sample,
-$D_{-i}$ is the training set without the sample $x_i$, and $u$ is the utility
-function. See [the section on notation][notation-and-nomenclature] for more.
-
-For the purposes of data valuation, this is rarely useful beyond serving as a
-baseline for benchmarking. Although in some benchmarks it can perform
-astonishingly well on occasion. One particular weakness is that it does not
-necessarily correlate with an intrinsic value of a sample: since it is a
-marginal utility, it is affected by diminishing returns. Often, the training set
-is large enough for a single sample not to have any significant effect on
-training performance, despite any qualities it may possess. Whether this is
-indicative of low value or not depends on each one's goals and definitions, but
-other methods are typically preferable.
-
-```python
-from pydvl.value.loo import compute_loo
-
-values = compute_loo(utility, n_jobs=-1)
-```
-
-The return value of all valuation functions is an object of type
-[ValuationResult][pydvl.value.result.ValuationResult]. This can be iterated over,
-indexed with integers, slices and Iterables, as well as converted to a
-[pandas.DataFrame][].
 
 
 ## Problems of data values
@@ -291,7 +301,7 @@ nature of every (non-trivial) ML problem can have an effect:
   semi-values, of which Shapley is an instance, one can prove that a choice of
   constant weights is the best one can do in a utility-agnostic setting. This
   method, dubbed *Data Banzhaf*, is available in pyDVL as
-  [compute_banzhaf_semivalues][pydvl.value.semivalues.compute_banzhaf_semivalues].
+  [BanzhafValuation][pydvl.valuation.methods.BanzhafValuation].
 
     ??? tip "Averaging repeated utility evaluations"
         One workaround in pyDVL is to configure the caching system to allow multiple
@@ -312,12 +322,12 @@ nature of every (non-trivial) ML problem can have an effect:
 
     ??? tip "Squashing scores" 
         pyDVL offers a dedicated [function
-        composition][pydvl.utils.score.compose_score] for scorer functions which
-        can be used to squash a score. The following is defined in module
-        [score][pydvl.utils.score]:
+        composition][pydvl.valuation.scorers.utils.compose_score] for scorer functions which
+        can be used to squash a score. The following is defined in the module
+        [scorers][pydvl.valuation.scorers]:
         ```python
         import numpy as np
-        from pydvl.utils import compose_score
+        from pydvl.valuation.score import compose_score
         
         def sigmoid(x: float) -> float:
           return float(1 / (1 + np.exp(-x)))
@@ -333,16 +343,15 @@ nature of every (non-trivial) ML problem can have an effect:
 
 * **Data set size**: Computing exact Shapley values is NP-hard, and Monte Carlo
   approximations can converge slowly. Massive datasets are thus impractical, at
-  least with [game-theoretical methods][game-theoretical-methods]. A workaround
-  is to group samples and investigate their value together. You can do this using
-  [GroupedDataset][pydvl.utils.dataset.GroupedDataset]. There is a fully
+  least with game-theoretical methods. A workaround is to group samples and investigate their value together. You can do this using
+  [GroupedDataset][pydvl.valuation.GroupedDataset]. There is a fully
   worked-out [example here](../examples/shapley_basic_spotify). Some algorithms
   also provide different sampling strategies to reduce the variance, but due to a
   no-free-lunch-type theorem, no single strategy can be optimal for all utilities.
   Finally, model specific methods like
-  [kNN-Shapley][pydvl.value.shapley.knn.knn_shapley] [@jia_efficient_2019a], or
+  [kNN-Shapley][pydvl.valuation.methods.knn_shapley] [@jia_efficient_2019a], or
   altogether different and typically faster approaches like
-  [Data-OOB][pydvl.value.oob.compute_data_oob] [@kwon_dataoob_2023] can also be
+  [Data-OOB][pydvl.valuation.methods.data_oob.DataOOBValuation] [@kwon_dataoob_2023] can also be
   used. 
 
 * **Model size**: Since every evaluation of the utility entails retraining the
@@ -355,30 +364,21 @@ nature of every (non-trivial) ML problem can have an effect:
   require cross-validating the whole value computation).
 
 
-## Notation and nomenclature { #notation-and-nomenclature }
+## A comment about sampling
 
-!!! todo
-    Organize this section better and use its content consistently throughout the
-    documentation.
+One might fear that there is a problem because the computation of the value
+$\psi_i$ requires at least some bootstrap samples *not* to include the $i$-th
+sample. But we can see that this is rarely an issue, and its probability of
+happening can be easily computed: For a training set of size $n$ and
+bootstrapping sample size $m \le n$, the probability that index $i$ is not
+included in a bootstrap sample is
 
-The following notation is used throughout the documentation:
+$$\prod_{j=1}^m \mathbb{P}(i \text{ is not drawn at pos. } j) = (1 - 1/n)^m,$$
 
-Let $D = \{x_1, \ldots, x_n\}$ be a training set of $n$ samples.
+i.e. for each of the $m$ draws, the sample is not picked (for $m=n$ this
+converges to $1/e \approx 0.368$). The probability that across $B$ bootstrapped
+samples a point is not included is therefore $(1  - 1/n)^{mB}$, which is
+typically extremely low.
 
-The utility function $u:\mathcal{D} \rightarrow \mathbb{R}$ maps subsets of $D$
-to real numbers. In pyDVL, we typically call this mapping a **score** for
-consistency with sklearn, and reserve the term **utility** for the triple of
-dataset $D$, model $f$ and score $u$, since they are used together to compute
-the value.
-
-The value $v$ of the $i$-th sample in dataset $D$ wrt. utility $u$ is
-denoted as $v_u(x_i)$ or simply $v(i)$.
-
-For any $S \subseteq D$, we denote by $S_{-i}$ the set of samples in $D$
-excluding $x_i$, and $S_{+i}$ denotes the set $S$ with $x_i$ added.
-
-The marginal utility of adding sample $x_i$ to a subset $S$ is denoted as
-$\delta(i) := u(S_{+i}) - u(S)$.
-
-The set $D_{-i}^{(k)}$ contains all subsets of $D$ of size $k$ that do not
-include sample $x_i$.
+Incidentally, this allows us to estimate the estimated number of unique indices
+in a bootstrap sample of size $m$ as $m(1 - 1/n)^m$.

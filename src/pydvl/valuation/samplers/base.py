@@ -1,7 +1,11 @@
 """
 Base classes for samplers and evaluation strategies.
 
-See [pydvl.valuation.samplers][pydvl.valuation.samplers] for details.
+Read [here][pydvl.valuation.samplers] for an architectural overview of the
+samplers and their evaluation strategies.
+
+For an explanation of the interactions between sampler weights, semi-value coefficients
+and importance sampling, read [[semi-values-sampling]].
 """
 
 from __future__ import annotations
@@ -206,27 +210,15 @@ class IndexSampler(ABC, Generic[ValueUpdateT]):
 
     @abstractmethod
     def log_weight(self, n: int, subset_len: int) -> float:
-        r"""Factor by which to multiply Monte Carlo samples, so that the
-        mean converges to the desired expression.
+        r"""Factor by which to multiply Monte Carlo samples, so that the mean converges
+        to the desired expression.
+
+        For details on weighting, importance sampling and usage with semi-values, see
+        [[semi-values-sampling]].
 
         !!! Info "Log-space computation"
             Because the weight is a probability that can be arbitrarily small, we
             compute it in log-space for numerical stability.
-
-        By the Law of Large Numbers, the sample mean of $f(S_j)$ converges to the
-        expectation under the distribution from which $S_j$ is sampled.
-
-        $$
-        \begin{eqnarray}
-            \frac{1}{m} \sum_{j = 1}^m f (S_j) w (S_j) & \longrightarrow &
-                \underset{S \sim \mathcal{D}_{- i}}{\mathbb{E}} [f (S) w (S)] \\
-            &  & = \sum_{S \subseteq N_{- i}} f (S) w (S)
-                \mathbb{P}_{\mathcal{D}_{- i}} (S)
-        \end{eqnarray}.
-        $$
-
-        We add the factor $w(S_j)$ in order to have this expectation coincide with the
-        desired expression, by cancelling out $\mathbb{P} (S)$.
 
         Args:
             n: The size of the index set. Note that the actual size of the set being
@@ -248,7 +240,16 @@ class IndexSampler(ABC, Generic[ValueUpdateT]):
         utility: UtilityBase,
         log_coefficient: Callable[[int, int], float] | None = None,
     ) -> EvaluationStrategy:
-        """Returns the strategy for this sampler."""
+        """Returns the strategy for this sampler.
+
+        Args:
+            utility: The utility to use for the evaluation strategy.
+            log_coefficient: An additional coefficient to multiply marginals with. This
+                depends on the valuation method, hence the delayed setup. If `None`,
+                the default is **to apply no correction**. This makes the sampling
+                probabilities of the sampler the effective valuation coefficient in the
+                limit.
+        """
         ...  # return SomeLogEvaluationStrategy(self)
 
     def result_updater(self, result: ValuationResult) -> ResultUpdater[ValueUpdateT]:
@@ -324,19 +325,19 @@ class EvaluationStrategy(ABC, Generic[SamplerT, ValueUpdateT]):
 
     ??? Example "Usage pattern in valuation methods"
         ```python
-            def fit(self, data: Dataset):
-                self.utility = self.utility.with_dataset(data)
-                strategy = self.sampler.strategy(self.utility, self.log_coefficient)
-                delayed_batches = Parallel()(
-                    delayed(strategy.process)(batch=list(batch), is_interrupted=flag)
-                    for batch in self.sampler
-                )
-                for batch in delayed_batches:
-                    for evaluation in batch:
-                        self.result.update(evaluation.idx, evaluation.update)
-                    if self.is_done(self.result):
-                        flag.set()
-                        break
+        def fit(self, data: Dataset):
+            self.utility = self.utility.with_dataset(data)
+            strategy = self.sampler.strategy(self.utility, self.log_coefficient)
+            delayed_batches = Parallel()(
+                delayed(strategy.process)(batch=list(batch), is_interrupted=flag)
+                for batch in self.sampler
+            )
+            for batch in delayed_batches:
+                for evaluation in batch:
+                    self.result.update(evaluation.idx, evaluation.update)
+                if self.is_done(self.result):
+                    flag.set()
+                    break
         ```
 
     Args:
@@ -345,7 +346,9 @@ class EvaluationStrategy(ABC, Generic[SamplerT, ValueUpdateT]):
             this contains the training data, it is expensive to pickle and send to
             workers.
         log_coefficient: An additional coefficient to multiply marginals with. This
-            depends on the valuation method, hence the delayed setup.
+            depends on the valuation method, hence the delayed setup. If `None`, the
+            default is **to apply no correction**. This makes the sampling probabilities
+            of the sampler the effective valuation coefficient in the limit.
     """
 
     def __init__(

@@ -83,7 +83,7 @@ If you use remote execution, don't forget to exclude data paths from deployment
 ## Testing
 
 Automated builds, tests, generation of documentation and publishing are handled
-by [CI pipelines](#CI). Before pushing your changes to the remote we recommend
+by [CI pipelines](#ci). Before pushing your changes to the remote we recommend
 to execute `tox` locally in order to detect mistakes early on and to avoid
 failing pipelines. tox will:
 * run the test suite
@@ -297,6 +297,22 @@ the environment variable `DYLD_FALLBACK_LIBRARY_PATH`:
 export DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:/opt/homebrew/lib
 ```
 
+### Automatic API documentation
+
+We use [mkdocstrings](https://mkdocstrings.github.io/) to automatically generate
+API documentation from docstrings, following almost verbatim [this
+recipe](https://mkdocstrings.github.io/recipes/#automatic-code-reference-pages):
+Stubs are generated for all modules on the fly using
+[generate_api_docs.py](https://github.com/aai-institute/pyDVL/blob/develop/build_scripts/generate_api_docs.py) thanks to the pluging
+[mkdocstrings-gen-files](https://github.com/oprypin/mkdocs-gen-files) and
+navigation is generated for
+[mkdocs-literate-nav](https://github.com/oprypin/mkdocs-literate-nav).
+
+With some renaming and using
+[section-index](https://github.com/oprypin/mkdocs-section-index)
+`__init__.py` files are used as entry points for the documentation of a module.
+
+
 ### Adding new pages
 
 Navigation is configured in `mkdocs.yaml` using the nav section. We use the
@@ -441,7 +457,7 @@ use braces for legibility like in the first example.
 ### Abbreviations
 
 We keep the abbreviations used in the documentation inside the
-[docs_include/abbreviations.md](https://github.com/aai-institute/pyDVL/blob/develop/docs_includes%2Fabbreviations.md) file.
+[docs_include/abbreviations.md](https://github.com/aai-institute/pyDVL/blob/develop/docs_includes/abbreviations.md) file.
 
 The syntax for abbreviations is:
 

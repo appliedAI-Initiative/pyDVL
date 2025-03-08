@@ -1,4 +1,5 @@
 *[AM]: Arnoldi Method
+*[AME]: Average Marginal Effect
 *[BCG]: Block Conjugate Gradient
 *[CG]: Conjugate Gradient
 *[CSP]: Constraint Satisfaction Problem

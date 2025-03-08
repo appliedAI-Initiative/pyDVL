@@ -269,7 +269,7 @@ def compute_classwise_shapley_values(
 
     where $\sigma_{:i}$ denotes the set of indices in permutation sigma before
     the position where $i$ appears and $S$ is a subset of the index set of all
-    other labels (see [the main documentation][#intro-to-cw-shapley] for
+    other labels (see [the main documentation][intro-to-cw-shapley] for
     details).
 
     Args:

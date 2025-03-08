@@ -30,7 +30,7 @@ def init_executor(
 
     Args:
         max_workers: Maximum number of concurrent tasks.
-        config: instance of [ParallelConfig][pydvl.utils.config.ParallelConfig]
+        config: instance of [ParallelConfig][pydvl.parallel.config.ParallelConfig]
             with cluster address, number of cpus, etc.
         kwargs: Other optional parameter that will be passed to the executor.
 

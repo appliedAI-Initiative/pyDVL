@@ -19,6 +19,7 @@ __all__ = [
     "NameT",
     "ReduceFunction",
     "Seed",
+    "SemivalueCoefficient",
     "SupervisedModel",
     "ensure_seed_sequence",
 ]
@@ -27,6 +28,10 @@ IndexT = TypeVar("IndexT", bound=np.int_)
 NameT = TypeVar("NameT", np.object_, np.int_)
 R = TypeVar("R", covariant=True)
 Seed = Union[int, Generator]
+
+
+class SemivalueCoefficient(Protocol):
+    def __call__(self, n: int, k: int) -> float: ...
 
 
 class MapFunction(Protocol[R]):

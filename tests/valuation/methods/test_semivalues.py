@@ -6,8 +6,8 @@ import pytest
 from pydvl.utils import logcomb
 from pydvl.valuation.games import Game
 from pydvl.valuation.methods import (
+    BanzhafValuation,
     BetaShapleyValuation,
-    DataBanzhafValuation,
     SemivalueValuation,
     ShapleyValuation,
 )
@@ -25,7 +25,7 @@ from ..samplers.test_sampler import deterministic_samplers, random_samplers
         (BetaShapleyValuation, {"alpha": 1, "beta": 1}),
         (BetaShapleyValuation, {"alpha": 1, "beta": 16}),
         (BetaShapleyValuation, {"alpha": 4, "beta": 1}),
-        (DataBanzhafValuation, {}),
+        (BanzhafValuation, {}),
         (ShapleyValuation, {}),
     ],
 )
@@ -69,7 +69,7 @@ def test_log_coefficients(n, valuation_cls, kwargs):
         # DataShapley is already tested in test_montecarlo_shapley.py
         # (ShapleyValuation, {}, "shapley_values"),
         (BetaShapleyValuation, {"alpha": 1, "beta": 1}, "shapley_values"),
-        (DataBanzhafValuation, {}, "banzhaf_values"),
+        (BanzhafValuation, {}, "banzhaf_values"),
     ],
 )
 def test_games(

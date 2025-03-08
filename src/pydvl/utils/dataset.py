@@ -1,4 +1,8 @@
 """
+!!! Warning "Deprecation notice"
+    This module is deprecated since v0.10.0. For use with the methods in
+    [pydvl.valuation][] please use [pydvl.valuation.dataset][] instead.
+
 This module contains convenience classes to handle data and groups thereof.
 
 Shapley and Least Core value computations require evaluation of a scoring function

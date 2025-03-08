@@ -14,7 +14,7 @@ The underlying data arrays can always be accessed (read-only) via
 
 ## Slicing
 
-Slicing the object, e.g. `dataset[0]`, will return a new `Dataset` with the data
+Slicing a [Dataset][] object, e.g. `dataset[0]`, will return a new `Dataset` with the data
 corresponding to that slice. Note however that the contents of the new object, i.e.
 `dataset[0].data().x`, may not be the same as `dataset.data().x[0]`, which is the first
 point in the original data array. This is in particular true for

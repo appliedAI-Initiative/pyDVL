@@ -77,7 +77,7 @@ if not os.getenv("CI"):
 
 
 @pytest.mark.parametrize("n_jobs", n_jobs_list)
-def test_data_beta_shapley_valuation(train_data, utility, n_jobs):
+def test_beta_shapley_valuation(train_data, utility, n_jobs):
     valuation = BetaShapleyValuation(
         utility,
         sampler=AntitheticSampler(),
@@ -117,8 +117,8 @@ def test_delta_shapley_valuation(train_data, utility, n_jobs):
 
 
 @pytest.mark.parametrize("n_jobs", [1, 2])
-def test_data_banzhaf_valuation(train_data, utility, n_jobs):
-    val_bzf = DataBanzhafValuation(
+def test_banzhaf_valuation(train_data, utility, n_jobs):
+    val_bzf = BanzhafValuation(
         utility,
         sampler=PermutationSampler(RelativeTruncation(rtol=0.1)),
         is_done=MaxUpdates(5),

@@ -161,52 +161,54 @@ lazy_influences.to_zarr("influences_result", TorchNumpyConverter())
 The steps required to compute data values for your samples are:
 
 1. Import the necessary packages (the exact ones will depend on your specific
-   use case).
-2. Create a `Dataset` object with your train and test splits.
-3. Create an instance of a `SupervisedModel` (basically any sklearn compatible
-   predictor), and wrap it in a `Utility` object together with the data and a
-   scoring function.
-4. Use one of the methods defined in the library to compute the values. In the
-   example below, we will use *Permutation Montecarlo Shapley*, an approximate
-   method for computing Data Shapley values. The result is a variable of type
+   use case, but most of the interface is exposed through `pydvl.valuation`).
+2. Create two `Dataset` objects with your train and test splits. There are
+   some factories to do this from arrays or scikit-learn toy datasets.
+3. Create an instance of a `SupervisedScorer`, with any sklearn scorer and a
+   "valuation set" over which your model will be scored.
+4. Wrap model and scorer in a `ModelUtility`.
+5. Use one of the methods defined in the library to compute the values. In the
+   example below, we use the most basic *Montecarlo Shapley* with uniform
+   sampling, an approximate method for computing Data Shapley values.
+6. Call `fit` in a joblib parallel context. The result is a variable of type
    `ValuationResult` that contains the indices and their values as well as other
-   attributes.
-5. Convert the valuation result to a dataframe, and analyze and visualize the
-   values.
+   attributes. This object can be sliced, sorted and inspected directly, or you
+   can convert it to a dataframe for convenience.
 
 The higher the value for an index, the more important it is for the chosen
 model, dataset and scorer. Reciprocally, low-value points could be mislabelled,
 or out-of-distribution, and dropping them can improve the model's performance.
 
 ```python
-from sklearn.datasets import load_breast_cancer
-from sklearn.linear_model import LogisticRegression
+from joblib import parallel_config
+from sklearn.datasets import load_iris
+from sklearn.svm import SVC
+from pydvl.valuation import Dataset, ShapleyValuation, UniformSampler,\ 
+    MinUpdates, ModelUtility, SupervisedScorer
 
-from pydvl.utils import Dataset, Scorer, Utility
-from pydvl.value import (MaxUpdates, RelativeTruncation,
-                         permutation_montecarlo_shapley)
+seed = 42
+model = SVC(kernel="linear", probability=True, random_state=seed)
 
-data = Dataset.from_sklearn(
-  load_breast_cancer(),
-  train_size=10,
-  stratify_by_target=True,
-  random_state=16,
-  )
-model = LogisticRegression()
-u = Utility(
-  model,
-  data,
-  Scorer("accuracy", default=0.0)
-  )
-values = permutation_montecarlo_shapley(
-  u,
-  truncation=RelativeTruncation(u, 0.05),
-  done=MaxUpdates(1000),
-  seed=16,
-  progress=True
-  )
-df = values.to_dataframe(column="data_value")
+train, val = Dataset.from_sklearn(load_iris(), train_size=0.6, random_state=24)
+scorer = SupervisedScorer(model, val, default=0.0)
+utility = ModelUtility(model, scorer)
+sampler = UniformSampler(batch_size=2 ** 6, seed=seed)
+stopping = MinUpdates(1000)
+valuation = ShapleyValuation(utility, sampler, stopping, progress=True)
+
+with parallel_config(n_jobs=32):
+    valuation.fit(train)
+
+result = valuation.values()
+df = result.to_dataframe(column="shapley")
 ```
+
+### Deprecation notice
+
+Up until v0.9.2 valuation methods were available through the `pydvl.value`
+module, which is now deprecated in favour of the design showcased above,
+available under `pydvl.valuation`. The old module will be removed in a future
+release.
 
 # Contributing
 

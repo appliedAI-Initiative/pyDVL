@@ -21,6 +21,8 @@ __all__ = [
     "SampleGenerator",
     "SampleT",
     "UtilityEvaluation",
+    "ValueUpdate",
+    "ValueUpdateT",
 ]
 
 IndexT: TypeAlias = np.int_

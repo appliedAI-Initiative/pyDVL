@@ -9,29 +9,37 @@ We currently implement the following methods:
 
 ## Data valuation  { #implemented-methods-data-valuation }
 
-- [**LOO**][pydvl.valuation.methods.loo.LOOValuation].
+- **LOO** implemented via
+  [LOOValuation][pydvl.valuation.methods.loo.LOOValuation].
 
-- **Permutation Shapley**, via
+- **Permutation Shapley** (also called **ApproxShapley**), via
   [ShapleyValuation][pydvl.valuation.methods.shapley.ShapleyValuation]
   configured with a 
   [PermutationSampler][pydvl.valuation.samplers.permutation.PermutationSampler]
-  (also called **ApproxShapley**) [@castro_polynomial_2009].
+  [@castro_polynomial_2009].
 
-- **TMCS** via [ShapleyValuation][pydvl.valuation.methods.shapley.ShapleyValuation]
-  configured with
+- [**Truncated Monte Carlo Shapley**][pydvl.valuation.methods.shapley.TMCShapleyValuation],
+  also available with additional truncation policies and sampling methods via
+  [ShapleyValuation][pydvl.valuation.methods.shapley.ShapleyValuation]
+  configured with any
   [PermutationSampler][pydvl.valuation.samplers.permutation.PermutationSampler]
   and
-  [RelativeTruncation][pydvl.valuation.samplers.truncation.RelativeTruncation] 
+  [TruncationPolicy][pydvl.valuation.samplers.truncation.TruncationPolicy]
   [@ghorbani_data_2019].
 
-- [**Data Banzhaf**][pydvl.valuation.methods.data_banzhaf.DataBanzhafValuation]
+- [**Data Banzhaf**][pydvl.valuation.methods.banzhaf.BanzhafValuation]
+  and [**MSR sampling**][pydvl.valuation.samplers.msr.MSRSampler], in particular
+  [**MSR Banzhaf**][pydvl.valuation.methods.banzhaf.MSRBanzhafValuation]
   [@wang_data_2023].
 
 - [**Beta Shapley**][pydvl.valuation.methods.beta_shapley.BetaShapleyValuation]
   [@kwon_beta_2022].
 
-- [**CS-Shapley**][pydvl.valuation.methods.classwise_shapley.ClasswiseShapleyValuation]
+- [**Class-Wise Shapley**][pydvl.valuation.methods.classwise_shapley.ClasswiseShapleyValuation]
   [@schoch_csshapley_2022].
+
+- [**$\delta$-Shapley**][pydvl.valuation.methods.delta_shapley.DeltaShapleyValuation]
+  [@watson_accelerated_2023]
 
 - [**Least Core**][pydvl.valuation.methods.least_core.LeastCoreValuation]
   [@yan_if_2021].

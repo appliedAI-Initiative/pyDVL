@@ -1,4 +1,9 @@
 """
+!!! Warning "Deprecation notice"
+    This module is deprecated since v0.10.0. For use with the methods in
+    [pydvl.valuation][] please use any of the classes in
+    [pydvl.valuation.utility][] instead.
+
 This module contains classes to manage and learn utility functions for the
 computation of values. Please see the documentation on
 [Computing Data Values][computing-data-values] for more information.
@@ -211,7 +216,7 @@ class Utility:
 
         Returns:
             0 if no indices are passed, `default_score` if we fail
-                to fit the model or the scorer returns [numpy.NaN][]. Otherwise, the score
+                to fit the model or the scorer returns [numpy.nan][]. Otherwise, the score
                 of the model on the test data.
         """
         if not indices:

@@ -69,15 +69,15 @@ from numpy.typing import NDArray
 from pydvl.utils.progress import Progress
 from pydvl.valuation.base import Valuation
 from pydvl.valuation.dataset import Dataset, GroupedDataset
+from pydvl.valuation.parallel import (
+    ensure_backend_has_generator_return,
+    make_parallel_flag,
+)
 from pydvl.valuation.result import ValuationResult
 from pydvl.valuation.samplers.classwise import ClasswiseSampler, get_unique_labels
 from pydvl.valuation.scorers.classwise import ClasswiseSupervisedScorer
 from pydvl.valuation.stopping import StoppingCriterion
 from pydvl.valuation.utility.classwise import ClasswiseModelUtility
-from pydvl.valuation.utils import (
-    ensure_backend_has_generator_return,
-    make_parallel_flag,
-)
 
 __all__ = ["ClasswiseShapleyValuation"]
 

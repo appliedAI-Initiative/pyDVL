@@ -123,7 +123,7 @@ class DeepSet(nn.Module):
         phi_x = self.phi(x)  # shape: (batch_size, set_size, phi_output_dim)
         aggregated = torch.sum(phi_x, dim=1)  # shape: (batch_size, phi_output_dim)
         out = self.rho(aggregated)  # shape: (batch_size, 1)
-        return out
+        return cast(Tensor, out)
 
 
 class SetDatasetRaw(TorchDataset):
@@ -132,7 +132,7 @@ class SetDatasetRaw(TorchDataset):
         samples: dict[Sample, float],
         training_data: Dataset,
         dtype: torch.dtype = torch.float32,
-        device: torch.device = "cpu",
+        device: torch.device | str = "cpu",
     ):
         """
         Args:

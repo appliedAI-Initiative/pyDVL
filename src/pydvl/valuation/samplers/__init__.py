@@ -73,8 +73,9 @@ which returns a callable that updates the result with a single evaluation.
 
 To create a custom sampler, subclass either
 [PowersetSampler][pydvl.valuation.samplers.PowersetSampler]
-or [PermutationSamplerBase][pydvl.valuation.samplers.permutation.PermutationSamplerBase], or
-implement the [IndexSampler][pydvl.valuation.samplers.IndexSampler] interface directly.
+or [PermutationSamplerBase][pydvl.valuation.samplers.permutation.PermutationSamplerBase],
+or implement the [IndexSampler][pydvl.valuation.samplers.IndexSampler] interface
+directly.
 
 There are three main methods to implement (and others that can be overridden):
 
@@ -86,8 +87,18 @@ There are three main methods to implement (and others that can be overridden):
   single permutations are always processed in one go.
 * [log_weight()][pydvl.valuation.samplers.base.IndexSampler.log_weight] to provide a
   factor by which to multiply Monte Carlo samples in stochastic methods, so that the
-  mean converges to the desired expression. This will typically be the logarithm of the
-  inverse probability of sampling a given subset.
+  mean converges to the desired expression. This will be the logarithm of the
+  probability of sampling a given subset. For an explanation of the interactions between
+  sampler weights, semi-value coefficients and importance sampling, see
+  [Sampling strategies for semi-values][semi-values-sampling].
+
+    ??? tip "Disabling importance sampling"
+        If you want to disable importance sampling, you can override the property
+        [log_coefficient()][pydvl.valuation.methods.semivalue.SemivalueValuation.log_coefficient]
+        and return `None`. This will make the evaluation strategy ignore the sampler
+        weights and the Monte Carlo sums converge to the expectation of the marginal
+        utilities wrt. the sampling distribution, with no change.
+
 * [make_strategy()][pydvl.valuation.samplers.base.IndexSampler.make_strategy] to create
   an evaluation strategy that processes the samples. This is typically a subclass of
   [EvaluationStrategy][pydvl.valuation.samplers.base.EvaluationStrategy] that computes
@@ -96,7 +107,7 @@ There are three main methods to implement (and others that can be overridden):
   evaluations of
   [PowersetEvaluationStrategy][pydvl.valuation.samplers.powerset.PowersetEvaluationStrategy]
   or the successive evaluations of
-  [PermutationEvaluationStrategy][pydvl.valuation.samplers.permutation.PermutationEvaluationStrategy]
+  [PermutationEvaluationStrategy][pydvl.valuation.samplers.permutation.PermutationEvaluationStrategy].
 
 Finally, if the sampler requires a dedicated result updater, you must override
 [result_updater()][pydvl.valuation.samplers.base.IndexSampler.result_updater] to return

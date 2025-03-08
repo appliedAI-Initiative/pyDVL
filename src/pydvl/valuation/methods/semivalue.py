@@ -21,24 +21,24 @@ point is removed from one or more subsets of the data.
 
 from __future__ import annotations
 
-from abc import abstractmethod
 from typing import Any
 
 from joblib import Parallel, delayed
 from typing_extensions import Self
 
+from pydvl.utils import SemivalueCoefficient
 from pydvl.utils.functional import suppress_warnings
 from pydvl.utils.progress import Progress
 from pydvl.valuation.base import Valuation
 from pydvl.valuation.dataset import Dataset
+from pydvl.valuation.parallel import (
+    ensure_backend_has_generator_return,
+    make_parallel_flag,
+)
 from pydvl.valuation.result import ValuationResult
 from pydvl.valuation.samplers import IndexSampler
 from pydvl.valuation.stopping import StoppingCriterion
 from pydvl.valuation.utility.base import UtilityBase
-from pydvl.valuation.utils import (
-    ensure_backend_has_generator_return,
-    make_parallel_flag,
-)
 
 __all__ = ["SemivalueValuation"]
 
@@ -94,8 +94,8 @@ class SemivalueValuation(Valuation):
         else:
             raise TypeError(f"Invalid type for progress: {type(progress)}")
 
-    @abstractmethod
-    def log_coefficient(self, n: int, k: int) -> float:
+    @property
+    def log_coefficient(self) -> SemivalueCoefficient | None:
         """The semi-value coefficient in log-space.
 
         The semi-value coefficient is a function of the number of elements in the set,
@@ -110,7 +110,17 @@ class SemivalueValuation(Valuation):
         Returns:
             The natural logarithm of the semi-value coefficient.
         """
-        ...
+        return self._log_coefficient
+
+    def _log_coefficient(self, n: int, k: int) -> float:
+        """The semi-value coefficient in log-space.
+
+        Implementations must provide the semi-value coefficient in log-space.
+        """
+        raise NotImplementedError(
+            "Subclasses must either implement this method or"
+            "override the log_coefficient property"
+        )
 
     @suppress_warnings(flag="show_warnings")
     def fit(self, data: Dataset) -> Self:

@@ -100,14 +100,14 @@ as described above for semi-values.
 
 ??? Example
     ```python
-    from pydvl.valuation import DataBanzhafValuation, MinUpdates, MSRSampler, RankCorrelation
+    from pydvl.valuation import BanzhafValuation, MinUpdates, MSRSampler, RankCorrelation
 
     model = ... # Some sklearn-compatible model
     scorer = SupervisedScorer("accuracy", test_data, default=0.0)
     utility = ModelUtility(model, scorer)
     sampler = MSRSampler(seed=seed)
     stopping = RankCorrelation(rtol=1e-2, burn_in=32) | MinUpdates(1000)
-    valuation = DataBanzhafValuation(utility=utility, sampler=sampler, is_done=stopping)
+    valuation = BanzhafValuation(utility=utility, sampler=sampler, is_done=stopping)
     with parallel_config(n_jobs=4):
         valuation.fit(training_data)
     result = valuation.values()

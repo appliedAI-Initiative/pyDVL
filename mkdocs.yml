@@ -13,16 +13,17 @@ nav:
     - First steps: getting-started/first-steps.md
     - Applications: getting-started/applications.md
     - Benchmarking: getting-started/benchmarking.md
-    - Methods: getting-started/methods.md
     - Advanced usage: getting-started/advanced-usage.md
-    - Glossary: getting-started/glossary.md
   - Data Valuation:
     - value/index.md
+    - Leave-One-Out: value/loo.md
     - Shapley values: value/shapley.md
+    - Owen-Shapley values: value/owen.md
     - Semi-values: value/semi-values.md
     - Class-wise Shapley: value/classwise-shapley.md
     - Least Core: value/the-core.md
     - Data-OOB: value/data-oob.md
+    - Sampling strategies for semi-values: value/sampling-weights.md
   - The Influence Function:
     - influence/index.md
     - Influence Function Model: influence/influence_function_model.md
@@ -42,9 +43,28 @@ nav:
       - For outlier detection: examples/influence_wine.ipynb
       - For language models: examples/influence_sentiment_analysis.ipynb
   - Code:
-    - API Reference: api/pydvl/
+    # We use literate-nav to generate the navigation sidebar for the API
+    # by leaving the trailing slash. Do not remove it!
+    - API Reference:
+      - Intro: api/pydvl/
+      - Data Valuation:
+        - Intro: api/pydvl/valuation/
+        - Datasets: api/pydvl/valuation/dataset/
+        - Methods: api/pydvl/valuation/methods/
+        - Utilities: api/pydvl/valuation/utility/
+        - Scorers: api/pydvl/valuation/scorers/
+        - Samplers: api/pydvl/valuation/samplers/
+        - Stopping criteria: api/pydvl/valuation/stopping/
+      - Influence Function: api/pydvl/influence/
+      - Reporting: api/pydvl/reporting/
     - Changelog: CHANGELOG.md
     - Development Guidelines: CONTRIBUTING.md
+    - Deprecated API:
+      - value/deprecation.md
+      - Data Valuation: deprecated/pydvl/value/
+      - Parallelization: deprecated/pydvl/parallel/
+  - Methods: getting-started/methods.md
+  - Glossary: getting-started/glossary.md
 
 watch:
   - src/pydvl
@@ -122,14 +142,15 @@ plugins:
             docstring_section_style: spacy
             line_length: 80
             show_bases: true
-            members_order: source
+            members_order: alphabetical
+            modernize_annotations: true
             show_submodules: false
             separate_signature: true
             show_signature_annotations: true
             signature_crossrefs: true
             merge_init_into_class: true
             docstring_options:
-              ignore_init_summary: true
+              ignore_init_summary: false
             show_symbol_type_toc: true
             show_symbol_type_heading: true
             show_root_full_path: true
@@ -157,7 +178,7 @@ theme:
     - content.code.copy
     - navigation.footer
     - content.tooltips
-#    - navigation.indexes
+    - navigation.indexes
     - navigation.instant
     - navigation.path
     - navigation.sections
